@@ -1,3 +1,4 @@
+cbt_credentials.json
 .DS_Store
 .ipynb_checkpoints
 node_modules
@@ -8,3 +9,4 @@ __pycache__
 *.swp
 .vscode/
 .idea/
+/breakout/collection.json
