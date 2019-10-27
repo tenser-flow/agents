@@ -1,0 +1,12 @@
+tensorflow
+tf-agents
+numpy==1.14.5
+protobuf
+gym
+tqdm
+google-cloud-bigtable
+google-cloud-bigquery
+google-cloud-storage
+mlagents_envs==0.9.0
+mlagents==0.9.0
+tensorflow-probability==0.8.0
