@@ -32,7 +32,18 @@ class ReplayBufferTestClass(replay_buffer.ReplayBuffer):
 
 
 class ReplayBufferInitTest(tf.test.TestCase):
-
+  """Creates a data_spec for test case.
+  
+  Returns:
+    A TensorSpec of (shape=(3,),
+                    dtype=tf.float32,
+                    name='action'),
+                      (TensorSpec(shape=(5,),
+                      dtype=tf.float32, name='lidar'),
+                      TensorSpec(shape=(3, 2),
+                      dtype=tf.float32, 
+                      name='camera'))
+  """
   def _data_spec(self):
     return (
         specs.TensorSpec([3], tf.float32, 'action'),
@@ -43,6 +54,9 @@ class ReplayBufferInitTest(tf.test.TestCase):
     )
 
   def testReplayBufferInit(self):
+  """Initializes a ReplayBuffer.
+  Checks data_spec and capacity
+  """
     spec = self._data_spec()
     capacity = 10
     rb = ReplayBufferTestClass(spec, capacity)
@@ -50,6 +64,7 @@ class ReplayBufferInitTest(tf.test.TestCase):
     self.assertEqual(rb.capacity, capacity)
 
   def testReplayBufferInitWithStatefulDataset(self):
+  """Initializes a ReplayBuffer with stateful_dataset."""
     spec = self._data_spec()
     capacity = 10
     rb = ReplayBufferTestClass(spec, capacity, stateful_dataset=True)
@@ -58,6 +73,7 @@ class ReplayBufferInitTest(tf.test.TestCase):
     self.assertEqual(rb.stateful_dataset, True)
 
   def testMethods(self):
+  """Test if Replay Buffer methods are implemented.""" 
     spec = self._data_spec()
     capacity = 10
     rb = ReplayBufferTestClass(spec, capacity)
@@ -73,3 +89,4 @@ class ReplayBufferInitTest(tf.test.TestCase):
 
 if __name__ == '__main__':
   tf.test.main()
+
