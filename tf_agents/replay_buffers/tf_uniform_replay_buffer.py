@@ -161,19 +161,25 @@ class TFUniformReplayBuffer(replay_buffer.ReplayBuffer):
 
   @property
   def device(self):
+    """ A TensorFlow device to place the Variables and ops."""
     return self._device
 
   @property
   def table_fn(self):
+    """Function to create tables `table_fn(data_spec, capacity)` that can 
+    read/write nested tensors.
+    """
     return self._table_fn
 
   @property
   def scope(self):
+    """Scope prefix for variables and ops created by this class."""
     return self._scope
 
   # Methods defined in ReplayBuffer base class
 
   def _num_frames(self):
+    """Returns the number of frames in the replay buffer."""
     num_items_single_batch_segment = self._get_last_id() + 1
     total_frames = num_items_single_batch_segment * self._batch_size
     return tf.minimum(total_frames, self._capacity)
@@ -197,6 +203,13 @@ class TFUniformReplayBuffer(replay_buffer.ReplayBuffer):
       write_rows = self._get_rows_for_id(id_)
       write_id_op = self._id_table.write(write_rows, id_)
       write_data_op = self._data_table.write(write_rows, items)
+      print("device: ", self._device)
+      print("name_scope: ", self._scope)
+      print("write_rows: ", write_rows)
+      print("id_", id_)
+      print ("write_id_op: ", write_id_op)
+      print ("write_data_op:", write_data_op)
+      print ("group: ", tf.group(write_id_op, write_data_op))
       return tf.group(write_id_op, write_data_op)
 
   def _get_next(self,
