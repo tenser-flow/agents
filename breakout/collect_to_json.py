@@ -88,14 +88,14 @@ class Json_TFReplayBuffer(tf_uniform_replay_buffer.TFUniformReplayBuffer):
         print(data[1].time_step)
         #print(data)
         """
-        print ("data", data)
+        #print ("data", data)
         with open(r'collection.json', 'a') as fd:
             i = 0
-            print (dir(data))
+            #print (dir(data))
             #print ("action_step :", data.action_step)
-            print ("action :", data.action)
-            print ("policy info", data.policy_info)
-            print ("step_type", data.step_type)
+            #print ("action :", data.action)
+            #print ("policy info", data.policy_info)
+            #print ("step_type", data.step_type)
             #print("ident", ident)
             #print("data[1]", item)
             items_to_json = { ident:
@@ -121,22 +121,22 @@ class Json_TFReplayBuffer(tf_uniform_replay_buffer.TFUniformReplayBuffer):
         
     def _add_batch_to_json(self, items):
         tf.nest.assert_same_structure(items, self._data_spec)
-        print("items: ", items)
+        #print("items: ", items)
         with tf.device(self._device), tf.name_scope(self._scope):
             id_ = self._increment_last_id()
             write_rows = self._get_rows_for_id(id_)
             write_id_op = self._id_table.write(write_rows, id_)
             write_data_op = self._data_table.write(write_rows, items)
-            print ("items :", items)
+            #print ("items :", items)
             data = self._write_data(items, "1")
-            print ()
-            print("device: ", self._device)
-            print("name_scope: ", self._scope)
-            print("write_rows: ", write_rows)
-            print("id_", id_)
-            print ("write_id_op: ", write_id_op)
-            print ("write_data_op:", write_data_op)
-            print ("group: ", tf.group(write_id_op, write_data_op))
+            #print ()
+            #print("device: ", self._device)
+            #print("name_scope: ", self._scope)
+            #print("write_rows: ", write_rows)
+            #print("id_", id_)
+            #print ("write_id_op: ", write_id_op)
+            #print ("write_data_op:", write_data_op)
+            #print ("group: ", tf.group(write_id_op, write_data_op))
             return tf.group(write_id_op, write_data_op)
 
 @gin.configurable
@@ -204,7 +204,7 @@ def collector_v1(
         observers=[replay_buffer.add_batch],
         num_steps=initial_collect_steps).run()
 
-    print ("collect_driver: ", dynamic_step_driver)
+    #print ("collect_driver: ", dynamic_step_driver)
 
     time_step = None
     policy_state = collect_policy.get_initial_state(env.batch_size)
