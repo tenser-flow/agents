@@ -203,13 +203,6 @@ class TFUniformReplayBuffer(replay_buffer.ReplayBuffer):
       write_rows = self._get_rows_for_id(id_)
       write_id_op = self._id_table.write(write_rows, id_)
       write_data_op = self._data_table.write(write_rows, items)
-      print("device: ", self._device)
-      print("name_scope: ", self._scope)
-      print("write_rows: ", write_rows)
-      print("id_", id_)
-      print ("write_id_op: ", write_id_op)
-      print ("write_data_op:", write_data_op)
-      print ("group: ", tf.group(write_id_op, write_data_op))
       return tf.group(write_id_op, write_data_op)
 
   def _get_next(self,
@@ -307,6 +300,7 @@ class TFUniformReplayBuffer(replay_buffer.ReplayBuffer):
                  num_steps=None,
                  num_parallel_calls=None,
                  single_deterministic_pass=False):
+    """Returns the parent class .as_dataset method"""
     return super(TFUniformReplayBuffer, self).as_dataset(
         sample_batch_size, num_steps, num_parallel_calls,
         single_deterministic_pass=single_deterministic_pass)
@@ -330,6 +324,7 @@ class TFUniformReplayBuffer(replay_buffer.ReplayBuffer):
         - Auxiliary info for the items (i.e. ids, probs).
     """
     def get_next(_):
+      """Returns the next entry from the buffer as a parameter."""
       return self.get_next(sample_batch_size, num_steps, time_stacked=True)
 
     dataset = tf.data.experimental.Counter().map(
