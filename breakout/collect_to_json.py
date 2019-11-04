@@ -33,7 +33,7 @@ tf.compat.v1.enable_v2_behavior()
 
 #for replaybuffer class
 from tf_agents.replay_buffers import replay_buffer
-from tf_agents.replay_buffers import table
+from tf_agents.replay_buffers import json_table
 from tf_agents.specs import tensor_spec
 #np.set_printoptions(threshold=np.inf)
 
@@ -67,7 +67,7 @@ class Json_TFReplayBuffer(tf_uniform_replay_buffer.TFUniformReplayBuffer):
                max_length=1000,
                scope='Json_TFReplayBuffer',
                device='cpu:*',
-               table_fn=table.Table,
+               table_fn=json_table.Table,
                dataset_drop_remainder=False,
                dataset_window_shift=None,
                stateful_dataset=False):
@@ -89,7 +89,7 @@ class Json_TFReplayBuffer(tf_uniform_replay_buffer.TFUniformReplayBuffer):
         #print(data)
         """
         #print ("data", data)
-        with open(r'collection.json', 'a') as fd:
+        with open(r'collection-main.json', 'a') as fd:
             i = 0
             #print (dir(data))
             #print ("action_step :", data.action_step)
@@ -188,9 +188,10 @@ def collector_v1(
     random_policy = random_tf_policy.RandomTFPolicy(env.time_step_spec(),
                                                 env.action_spec())
 
-    replay_buffer = Json_TFReplayBuffer(
+    replay_buffer = tf_uniform_replay_buffer.TFUniformReplayBuffer(
         data_spec=agent.collect_data_spec,
         batch_size=env.batch_size,
+        table_fn=json_table.Table,
         max_length=replay_buffer_capacity)
     
     print ("--------------------------------")
