@@ -34,7 +34,7 @@ import numpy as np
 import tensorflow as tf
 
 from tf_agents.replay_buffers import replay_buffer
-from tf_agents.replay_buffers import table
+from tf_agents.replay_buffers import json_table as table
 from tf_agents.specs import tensor_spec
 from tf_agents.utils import common
 
@@ -147,7 +147,8 @@ class TFUniformReplayBuffer(replay_buffer.ReplayBuffer):
     self._table_fn = table_fn
     self._dataset_drop_remainder = dataset_drop_remainder
     self._dataset_window_shift = dataset_window_shift
-    with tf.device(self._device), tf.compat.v1.variable_scope(self._scope):
+    #with tf.device(self._device), tf.compat.v1.variable_scope(self._scope):
+    with tf.device(self._device), tf.name_scope(self._scope):
       self._capacity = tf.constant(capacity, dtype=tf.int64)
       self._data_table = table_fn(self._data_spec, self._capacity_value)
       self._id_table = table_fn(self._id_spec, self._capacity_value)
@@ -291,6 +292,12 @@ class TFUniformReplayBuffer(replay_buffer.ReplayBuffer):
 
         buffer_info = BufferInfo(ids=data_ids,
                                  probabilities=probabilities)
+        print("_data_table: ", self._data_table)
+        print("_id_table: ", self._id_table)
+        print("rows_to_get: ", rows_to_get)
+        #tf.print("eval", rows_to_get)
+        print("steps_to_get: ", steps_to_get)
+        #print("steps_eval". steps_to_get.eval())
     return data, buffer_info
 
   @gin.configurable(

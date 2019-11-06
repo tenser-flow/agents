@@ -49,29 +49,41 @@ class Table(tf.Module):
     self._capacity = capacity
 
     def _create_unique_slot_name(spec):
-      return tf.compat.v1.get_default_graph().unique_name(spec.name or 'slot')
+      #print ("------------------")
+      #print ("spec: ", spec)
+      #print ("test name: ", spec.name)
+      results = tf.compat.v1.get_default_graph().unique_name(spec.name or 'slot')
+      #print ("_create_unique_slot_name: ", results)
+      return results
 
     self._slots = tf.nest.map_structure(_create_unique_slot_name,
                                         self._tensor_spec)
+    print ("self._slots", self._slots)
 
     def _create_storage(spec, slot_name):
       """Create storage for a slot, track it."""
       shape = [self._capacity] + spec.shape.as_list()
+
+      #print ("shape: ", shape)
       new_storage = common.create_variable(
           name=slot_name,
           initializer=tf.zeros(shape, dtype=spec.dtype),
           shape=None,
           dtype=spec.dtype,
           unique_name=False)
+      
+      #print ("new storage: ", new_storage)
       return new_storage
 
     with tf.compat.v1.variable_scope(scope):
       self._storage = tf.nest.map_structure(_create_storage, self._tensor_spec,
                                             self._slots)
+    print("self._storage: ", self._storage)
 
     self._slot2storage_map = dict(
         zip(tf.nest.flatten(self._slots), tf.nest.flatten(self._storage)))
-
+    
+    print ("self._slot2storage_map:", self._slot2storage_map)
   @property
   def slots(self):
     return self._slots
@@ -122,12 +134,26 @@ class Table(tf.Module):
     Returns:
       Ops for writing values at rows.
     """
+
+    #print ("rows: ", rows)
+    #print ("values: ", values)
+    #print ("slots: ", slots)
+    #print ("values type", type(values))
+
     slots = slots or self._slots
     flattened_slots = tf.nest.flatten(slots)
     flattened_values = tf.nest.flatten(values)
+
+    #print ("flattened_slots: ", flattened_slots)
+    #print ("flattened_values: ", flattened_values)
     write_ops = [
         tf.compat.v1.scatter_update(self._slot2storage_map[slot], rows,
                                     value).op
         for (slot, value) in zip(flattened_slots, flattened_values)
     ]
+    
+    for (slot, value) in zip(flattened_slots, flattened_values):
+      print ("slot:", slot, "value: ", value)
+
+
     return tf.group(*write_ops)

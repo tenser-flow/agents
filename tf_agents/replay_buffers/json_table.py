@@ -41,7 +41,7 @@ class NumpyEncoder(json.JSONEncoder):
           return obj.tolist()
         elif isinstance(obj, tf.Tensor):
           try:
-            return obj.numpy()
+            return NumpyEncoder(obj.numpy())
           except:
             return 1
         return json.JSONEncoder.default(self, obj)
@@ -99,6 +99,7 @@ class Table(tf.Module):
       #print ("new storage: ", new_storage)
       return new_storage
 
+
     with tf.compat.v1.variable_scope(scope):
       self._storage = tf.nest.map_structure(_create_storage, self._tensor_spec,
                                             self._slots)
@@ -134,30 +135,39 @@ class Table(tf.Module):
       Values at given rows.
     """
     print ("-------------------------")
-    data = []
-    
-    #for line in open(self._file_name, 'r'):
-    #  data.append(json.loads(line))
-    #with open(self._file_name, 'r') as fd:
-    #  data = json.load(fd)
-
     print ("DATA :")
     print ("READ CALL")
     print ("self: ", self)
-    print ("rows: ", rows)
+    #print ("rows: ", eval(rows))
     print ("slots: ", slots)
 
 
     print ("type ", type(rows))
-
     flattened_rows = tf.nest.flatten(rows)
     print ("flatten_rows: ", rows)
-    #print("row session", (tf.Session().run(rows)))
+    
     slots = slots or self._slots
     flattened_slots = tf.nest.flatten(slots)
     print ("slots2: ", slots)
     print ("flatten_slots: ", flattened_slots)
     
+    data = []
+    for line in open(self._file_name, 'r'):
+        current_line = json.loads(line)[0]
+        print(type(current_line))
+        #print(current_line.)
+        #print("curr_line id: ", current_line["id"])
+    """
+    for items in flattened_rows:
+      for line in open(self._file_name, 'r'):
+        current_line = json.loads(line)
+        if current_line["Json_replay_buffer"][id] >= items[0] or current_line["Json_replay_buffer"][id] <= items[1]:
+          data.append(current_line)
+    """
+    #with open(self._file_name, 'r') as fd:
+    #  data = json.load(fd)
+
+    print ("DATA from json_file:", data)
     print ("FROM READ self._slot2storage: ", self._slot2storage_map)
     values = [
         self._slot2storage_map[slot].sparse_read(rows)
@@ -166,8 +176,11 @@ class Table(tf.Module):
     print ("values: ", values)
     print ("Read returns", tf.nest.pack_sequence_as(slots, values))
     #print ("value numpy: ", [i for i in values])
-    
-    
+    #print("row session", (tf.compat.v1.Session().run(rows)))
+    #with tf.compat.v1.Session() as sess:
+    tf.print("tfprint-rows: ", rows)
+    tf.print("tfprint-slots: ", slots)
+
     return tf.nest.pack_sequence_as(slots, values)
 
 
@@ -210,15 +223,18 @@ class Table(tf.Module):
         #print("value:", value)
         #print("type value:", type(value))
         #print("numpyify value", numpyify(value))
-        
-        dictionary[slot] = numpyify(value)
+        print("slot: ", slot)
+        print("value: ", value)
+        dictionary[slot] = value
         #print ("dictionary: ", dictionary)
       #data = json.dumps(dictionary, separators=(',', ':'))
       #data = json.dumps({'Json_replay_buffer': [dictionary]}, separators=(',', ':'), cls=NumpyEncoder)
-      data = json.dumps({'Json_replay_buffer': dictionary}, separators=(',', ':'), cls=NumpyEncoder)
+      data = json.dumps(dictionary, separators=(',', ':'), cls=NumpyEncoder)
       json.dump(data, fd)
       fd.write('\n')
-
+      data.replace('\\"',"\'")
+      print("dictionary: ", dictionary)
+      print("data dump: ", data)
     write_ops = [
         tf.compat.v1.scatter_update(self._slot2storage_map[slot], rows,
                                     value).op
@@ -228,6 +244,7 @@ class Table(tf.Module):
 
 
     return tf.group(*write_ops)
+
 '''
 from __future__ import absolute_import
 from __future__ import division
