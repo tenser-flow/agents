@@ -46,39 +46,6 @@ class NumpyEncoder(json.JSONEncoder):
             return 1
         return json.JSONEncoder.default(self, obj)
 
-def tf_example_encoder(flattened_slot, flattened_value):
-  def _bytes_feature(value):
-    """Returns a bytes_list from a string / byte."""
-    if isinstance(value, type(tf.constant(0))):
-      value = value.numpy() # BytesList won't unpack a string from an EagerTensor.
-    return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
-
-  def _float_feature(value):
-    """Returns a float_list from a float / double."""
-    return tf.train.Feature(float_list=tf.train.FloatList(value=[value]))
-
-  def _int64_feature(value):
-    """Returns an int64_list from a bool / enum / int / uint."""
-    return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
-
-  if flattened_slot == 'id':
-    return _bytes_feature(flattened_slot.encode()), _int64_feature(flattened_value.numpy())
-  elif flattened_slot == 'step_type':
-    return _bytes_feature(flattened_slot.encode()), _int64_feature(flattened_value.numpy())
-  elif flattened_slot == 'observation':
-    pass
-    #return _bytes_feature(flattened_slot.encode('utf-8')), _bytes_feature(flattened_value.numpy())
-  elif flattened_slot == 'action':
-    return _bytes_feature(flattened_slot.encode('utf-8')), _int64_feature(flattened_value.numpy())
-  elif flattened_slot == 'step_type_1':
-    return _bytes_feature(flattened_slot.encode('utf-8')), _int64_feature(flattened_value.numpy())
-  elif flattened_slot == 'reward':
-    return _bytes_feature(flattened_slot.encode('utf-8')), _float_feature(flattened_value.numpy())
-  elif flattened_slot == 'discount':
-    return _bytes_feature(flattened_value.encode('utf-8')), _float_feature(flattened_value.numpy())
-  else:
-    return _bytes_feature(flattened_slot.ecode(), _bytes_feature(b'zero'))
-
 def numpyify(value):
   try:
     value = value.numpy()
@@ -248,8 +215,8 @@ class Table(tf.Module):
 
     #print ("flattened_slots: ", flattened_slots)
     #print ("flattened_values: ", flattened_values)
-    dictionary = {}
     with open(self._file_name, 'a') as fd:
+      dictionary = {}
       for (slot, value) in zip(flattened_slots, flattened_values):
         #print("slot :", slot)
         #print("type slot:", type(slot))
@@ -257,27 +224,23 @@ class Table(tf.Module):
         #print("type value:", type(value))
         #print("numpyify value", numpyify(value))
         print("slot: ", slot)
-        print("slot type:", type(slot))
         print("value: ", value)
-        print("value type:", type(value))
-        encoded_slot, encoded_value = tf_example_encoder(slot, value)
-        print ("encoded slot", encoded_slot)
-        print ("encoded value", encoded_value)
-        #dictionary[slot] = value
+        dictionary[slot] = value
         #print ("dictionary: ", dictionary)
       #data = json.dumps(dictionary, separators=(',', ':'))
       #data = json.dumps({'Json_replay_buffer': [dictionary]}, separators=(',', ':'), cls=NumpyEncoder)
-      #data = json.dumps(dictionary, separators=(',', ':'), cls=NumpyEncoder)
-      #json.dump(data, fd)
-      #fd.write('\n')
-      #data.replace('\\"',"\'")
-      #print("dictionary: ", dictionary)
-      #print("data dump: ", data)
+      data = json.dumps(dictionary, separators=(',', ':'), cls=NumpyEncoder)
+      json.dump(data, fd)
+      fd.write('\n')
+      data.replace('\\"',"\'")
+      print("dictionary: ", dictionary)
+      print("data dump: ", data)
     write_ops = [
         tf.compat.v1.scatter_update(self._slot2storage_map[slot], rows,
                                     value).op
         for (slot, value) in zip(flattened_slots, flattened_values)
     ]
+
 
 
     return tf.group(*write_ops)
