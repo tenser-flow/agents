@@ -61,23 +61,40 @@ def tf_example_encoder(flattened_slot, flattened_value):
     """Returns an int64_list from a bool / enum / int / uint."""
     return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
 
+  encoded_slot = _bytes_feature(flattened_slot.encode())
+
   if flattened_slot == 'id':
-    return _bytes_feature(flattened_slot.encode()), _int64_feature(flattened_value.numpy())
+    encoded_value = _int64_feature(flattened_value)
+  elif flattened_slot == 'array':
+    encoded_value = _float_feature(flattened_value)
   elif flattened_slot == 'step_type':
-    return _bytes_feature(flattened_slot.encode()), _int64_feature(flattened_value.numpy())
+    encoded_value = _int64_feature(flattened_value.numpy())
   elif flattened_slot == 'observation':
-    pass
-    #return _bytes_feature(flattened_slot.encode('utf-8')), _bytes_feature(flattened_value.numpy())
+    print ("---- ", flattened_value)
+    print ("[0] ", flattened_value[0])
+    print ("flatten_value: ", flattened_value.numpy())
+    #list_of_encoded_values = [tf_example_encoder('array', x) for x in flattened_value.numpy()[0]]
+    dict_of_encoded_values = {str(key): (_float_feature(value)) for key, value in enumerate (flattened_value.numpy()[0])}
+    #dict_of_encoded_values = {key : value['array'] for value, key in enumerate(list_of_encoded_values)}
+    print ("encoded list: ", dict_of_encoded_values)
+    print ("------list-----")
+    print(dict_of_encoded_values)
+    #i = 0
+    #for items in list_of_encoded_values:
+    #d
+    encoded_value = dict_of_encoded_values
+    
   elif flattened_slot == 'action':
-    return _bytes_feature(flattened_slot.encode('utf-8')), _int64_feature(flattened_value.numpy())
+    encoded_value = _int64_feature(flattened_value.numpy())
   elif flattened_slot == 'step_type_1':
-    return _bytes_feature(flattened_slot.encode('utf-8')), _int64_feature(flattened_value.numpy())
+    encoded_value = _int64_feature(flattened_value.numpy())
   elif flattened_slot == 'reward':
-    return _bytes_feature(flattened_slot.encode('utf-8')), _float_feature(flattened_value.numpy())
+    encoded_value = _float_feature(flattened_value.numpy())
   elif flattened_slot == 'discount':
-    return _bytes_feature(flattened_value.encode('utf-8')), _float_feature(flattened_value.numpy())
+    encoded_value = _float_feature(flattened_value.numpy())
   else:
-    return _bytes_feature(flattened_slot.ecode(), _bytes_feature(b'zero'))
+    encoded_value = _bytes_feature(b'zero')
+  return encoded_slot, encoded_value
 
 def numpyify(value):
   try:

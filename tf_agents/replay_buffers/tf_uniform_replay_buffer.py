@@ -198,13 +198,15 @@ class TFUniformReplayBuffer(replay_buffer.ReplayBuffer):
       ValueError: If called more than once.
     """
     tf.nest.assert_same_structure(items, self._data_spec)
-
+    
+    print ("items type :", type(items))
+    print ("items attr :", dir(items))
     with tf.device(self._device), tf.name_scope(self._scope):
       id_ = self._increment_last_id()
       write_rows = self._get_rows_for_id(id_)
       write_id_op = self._id_table.write(write_rows, id_)
       write_data_op = self._data_table.write(write_rows, items)
-      return tf.group(write_id_op, write_data_op)
+    return tf.group(write_id_op, write_data_op)
 
   def _get_next(self,
                 sample_batch_size=None,

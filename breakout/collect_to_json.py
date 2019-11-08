@@ -64,7 +64,7 @@ class Json_TFReplayBuffer(tf_uniform_replay_buffer.TFUniformReplayBuffer):
     def __init__(self,
                data_spec,
                batch_size,
-               max_length=1000,
+               max_length=20,
                scope='Json_TFReplayBuffer',
                device='cpu:*',
                table_fn=json_table.Table,
